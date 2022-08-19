@@ -1,24 +1,58 @@
+var um = 1;
 var express = require ('express');
 var app = express();
 var PORT = process.env.PORT || 3000;  // || this is the or operator 
+var todos = [];
+var nextTodo = 1;
 
-var todos = [
-    {
-        id: 1,
-        description: "meet mom for lunch",
-        completed: false
-    },
-    {
-        id: 2,
-        description: "go to market",
-        completed: false
-    },
-    {
-        id: 3,
-        description: "drink water",
-        completed: true
-    }
-]
+var bodyparser = require ('body-parser');
+
+app.use( bodyparser.json());  // este eh um middleware global
+
+// novo npm package
+// npm install body-parser@1.13.3 --save
+// npm i --save-dev @types/body-parser
+
+
+// vartodos = [ {     id: 1,
+//         description: "meet mom for lunch" + PORT,
+//         completed: false
+//     },
+//     {
+//         id: 2,
+//         description: "go to market" + PORT,
+//         completed: false
+//     },
+//     {
+//         id: 3,
+//         description: "drink water" + PORT,
+//         completed: true
+//     }
+// ]
+
+// 
+
+app.post('/todos', function(request, response){
+
+    var body = request.body;
+    console.log(body);
+    //var newTodo = body;  isto eh uma copia shallow e ambos os objetos sao alterados. 
+    var newTodo = JSON.parse(JSON.stringify(body));  // isto eh uma copia deep. Deep clone. objetos sao independentes
+    newTodo['id']=nextTodo;
+    nextTodo++;
+    console.log(body);
+    console.log(newTodo);
+
+
+    console.log('description: %s ', body.description);
+
+    todos.push(newTodo);
+
+    response.json(body);
+
+
+});
+
 
 
 
@@ -32,6 +66,12 @@ app.get('/', function(rq, rs){
 app.get('/todos', function(req, response){
 
     response.json(todos);
+
+});
+
+app.get('/size', function(req, response){
+
+    response.json(todos.length);
 
 });
 
