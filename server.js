@@ -1,45 +1,69 @@
 var express = require ('express');
 var app = express();
-var cont = 1;
-var contAbout = 1;
-
 var PORT = process.env.PORT || 3000;  // || this is the or operator 
 
-var middleware = require ("./middleware");
+var todos = [
+    {
+        id: 1,
+        description: "meet mom for lunch",
+        completed: false
+    },
+    {
+        id: 2,
+        description: "go to market",
+        completed: false
+    },
+    {
+        id: 3,
+        description: "drink water",
+        completed: true
+    }
+]
 
 
 
-
-
-app.use(middleware.logger);
-
-// app.get('/', function(rq, rs){
-
-//     rs.send('teste / ok');
-//     console.log('oi' + cont++);
-
-
-// });
-
-
-
-app.get('/about', middleware.requireAuthentication, function(rq, rs){
+app.get('/', function(rq, rs){
 
     rs.send('todo api');
-    console.log('about' + contAbout++);
-
 
 });
 
-// expor um folder 
-console.log(__dirname);  // verificar o diretorio que o server está rodando
 
-// se nao existir uma metodo get para a pasta raiz (/) o express pega o arquivo index.html
-app.use(express.static ( __dirname + '/public')   ); // modifica o diretorio para o express
+app.get('/todos', function(req, response){
+
+    response.json(todos);
+
+});
+
+
+app.get('/todos/:id', function(req , response){
+
+    var todoID = parseInt(req.params.id);
+    console.log ("searching for %s ", todoID);
+    var matchedTodo = 0;
+    todos.forEach ( function (todo){
+            console.log ("evaluating " + todo);
+            console.log ("eval id %s (%s) with search param %s (%s)", todo.id , typeof(todo.id) , todoID, typeof(todoID));
+            if (todo.id === todoID)
+            {
+                    console.log ("matchedTodo "+ todoID);
+                matchedTodo = todo;
+            }
+            else console.log("pulou! ");
+    })
+
+    if (matchedTodo === 0)
+        response.status(404).send() ;
+    else
+        response.json(matchedTodo) ;
+
+    
+
+});
 
 
 
-// app.listen(3000);  // modo basico para executar o server
+
 
 app.listen(PORT, function(){    // outro formado usando funcao anonima
         console.log('running web at %s', PORT);
