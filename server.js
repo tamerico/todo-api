@@ -6,6 +6,8 @@ var todos = [];
 var nextTodo = 1;
 
 var bodyparser = require ('body-parser');
+var _ = require("underscore");  // aula 57 do curso na udemy
+
 
 app.use( bodyparser.json());  // este eh um middleware global
 
@@ -36,15 +38,28 @@ app.post('/todos', function(request, response){
 
     var body = request.body;
     console.log(body);
+
+    body = _.pick(body, 'description', 'completed');
+    console.log(body);
+
+    // verificar se a chave description eh fornecida e eh valida
+    if (    !_.isBoolean(body.completed) ||
+            !_.isString(body.description) ||
+            body.description.trim().length===0){
+        return response.status(400).send();
+    }
+
+    body.description =  body.description.trim();
     //var newTodo = body;  isto eh uma copia shallow e ambos os objetos sao alterados. 
     var newTodo = JSON.parse(JSON.stringify(body));  // isto eh uma copia deep. Deep clone. objetos sao independentes
     newTodo['id']=nextTodo;
     nextTodo++;
+    
     console.log(body);
     console.log(newTodo);
 
 
-    console.log('description: %s ', body.description);
+    console.log('New description: %s  and status completed: %s', body.description, body.completed);
 
     todos.push(newTodo);
 
@@ -81,16 +96,18 @@ app.get('/todos/:id', function(req , response){
     var todoID = parseInt(req.params.id);
     console.log ("searching for %s ", todoID);
     var matchedTodo = 0;
-    todos.forEach ( function (todo){
-            console.log ("evaluating " + todo);
-            console.log ("eval id %s (%s) with search param %s (%s)", todo.id , typeof(todo.id) , todoID, typeof(todoID));
-            if (todo.id === todoID)
-            {
-                    console.log ("matchedTodo "+ todoID);
-                matchedTodo = todo;
-            }
-            else console.log("pulou! ");
-    })
+    // todos.forEach ( function (todo){
+    //         console.log ("evaluating " + todo);
+    //         console.log ("eval id %s (%s) with search param %s (%s)", todo.id , typeof(todo.id) , todoID, typeof(todoID));
+    //         if (todo.id === todoID)
+    //         {
+    //                 console.log ("matchedTodo "+ todoID);
+    //             matchedTodo = todo;
+    //         }
+    //         else console.log("pulou! ");
+    // })
+    // o trecho acima pode ser substituido pelo metodo _where do undescore.js
+     matchedTodo = _.findWhere(todos, {id: todoID});
 
     if (matchedTodo === 0)
         response.status(404).send() ;
