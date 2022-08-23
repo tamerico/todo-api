@@ -70,6 +70,38 @@ app.post('/todos', function(request, response){
 
 
 
+app.delete('/todos/:id', function(request, response){
+
+    var matchedTodo = 0;
+    var todoID = parseInt(request.params.id);
+    console.log('detonando : %s', todoID);
+
+    // procurar se existe
+    
+    console.log(todos);
+    matchedTodo = _.findWhere(todos, {id: todoID}); // copia exata do conteudo a ser excluido
+
+    //if ( typeof  matchedTodo === 'undefined'  )  pode ser assim
+    if (!matchedTodo) // ou assim mais clean
+    {   
+        console.log("matchedTodo === undefined : %s", matchedTodo);
+        //return response.status(404).send(); pode ser assim
+        return response.status(404).json({"error": "id not found" });
+    }
+    else
+        console.log("matchedTodo %s", matchedTodo);
+
+    console.log(matchedTodo); // mostra o conteudo a ser excluido: ex: { description: 'love my 1', completed: true, id: 1 }
+    todos = _.without(todos, matchedTodo); // retona lista retirando o dito cujo
+    console.log(todos);
+    // retirar da lista
+    // return response.status(200).send(); pode ser assim
+    return response.status(200).json(matchedTodo); // mostra o item excluido
+    
+
+
+});
+
 
 app.get('/', function(rq, rs){
 
