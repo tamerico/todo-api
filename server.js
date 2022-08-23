@@ -1,3 +1,8 @@
+// esse codigo tem uma coisa interesante no metodo put
+// ele tem um metodo que altera o conteudo da varivael todos .
+// nao altera diretamente mas por referencia.
+
+
 var um = 1;
 var express = require ('express');
 var app = express();
@@ -6,7 +11,7 @@ var todos = [];
 var nextTodo = 1;
 
 var bodyparser = require ('body-parser');
-var _ = require("underscore");  // aula 57 do curso na udemy
+var _ = require("underscore");  // aula 57 do curso na udemy apresenta o pacote underscore
 
 
 app.use( bodyparser.json());  // este eh um middleware global
@@ -70,6 +75,7 @@ app.post('/todos', function(request, response){
 
 
 
+// rota criada na aula 59 udemy - deleting todos id by api
 app.delete('/todos/:id', function(request, response){
 
     var matchedTodo = 0;
@@ -103,6 +109,55 @@ app.delete('/todos/:id', function(request, response){
 });
 
 
+// aula 60. updating todos usando o metodo PUT do HTTP
+app.put('/todos/:id', function(request, response){
+
+    var todoID = parseInt(request.params.id, 10);
+    matchedTodo = _.findWhere(todos, {id: todoID});  // observar a dif do metodo findWhere com o metodo Where
+    console.log("matchedTodo");
+    console.log(matchedTodo);
+    var body = request.body;
+    body = _.pick(body, 'description', 'completed');
+    console.log(body);
+
+    var ValidAttributes = {};
+
+    if (!matchedTodo)
+        return response.status(404).send();
+
+    if (    body.hasOwnProperty("completed") && _.isBoolean(body.completed) ){
+            ValidAttributes.completed = body.completed;
+    } else if (body.hasOwnProperty("completed")){
+        console.log("completed 400");
+        return response.status(400).send();
+    }
+
+    if (    body.hasOwnProperty("description") && _.isString(body.description) ){
+        ValidAttributes.description = body.description;
+    } else if (body.hasOwnProperty("description")){
+        console.log("description 400");
+        return response.status(400).send();
+    }
+    console.log("ValidAttributes:");
+    console.log(ValidAttributes);
+
+    console.log("todos:");
+    console.log(todos);
+
+
+    // como esse extend mudou a var todos ?
+    _.extend(matchedTodo, ValidAttributes);  // como o objeto eh uma referencia entao esta tudo ok
+    console.log("matchedTodo");
+    console.log(matchedTodo);
+
+    console.log("todos:");
+    console.log(todos);
+
+
+    response.json(matchedTodo);
+});
+
+
 app.get('/', function(rq, rs){
 
     rs.send('todo api');
@@ -111,8 +166,21 @@ app.get('/', function(rq, rs){
 
 
 app.get('/todos', function(req, response){
+    // aula 62 apresenta o conceito de filtros
+    var queryParams = req.query; // obtem parametros que podem existir apos o sinal de interrogacao
+    var filteredTodos = todos;
+    
+    // observar que o metodo where retorna todos os resultados em um array.   diferente do metodo findWhere que retorna somente o primeiro elemento
+    if (queryParams.hasOwnProperty("completed") && queryParams.completed ==='true')
+    {
+        filteredTodos =  _.where(todos, {completed: true}); 
+    } else if (queryParams.hasOwnProperty("completed") && queryParams.completed ==='false'){
+        filteredTodos =  _.where(todos, {completed: false});  
+    }
 
-    response.json(todos);
+
+    //response.json(todos);
+    response.json(filteredTodos);
 
 });
 
